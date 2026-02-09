@@ -42,6 +42,27 @@
 - 추천(찜/댓글 기반 룰 추천 → 간단한 협업필터링)
 - 수익화 1차(AdSense) 적용 + 광고 슬롯/빈도 설계
 
+## 3-1) 마일스톤(권장 일정)
+### Week 1
+- 데이터 모델/권한 설계, Firestore 스키마 확정
+- 크롤러 프로토타입(네이버웹툰 요일 목록 수집)
+- Next.js App Router 초기 구조 + SEO 페이지 라우팅
+
+### Week 2
+- 홈/요일/장르/작품 상세 페이지 구현(SSR/ISR)
+- 로그인/닉네임/찜/댓글 기본 기능
+- sitemap/robots/canonical/OG/Twitter 카드 적용
+
+### Week 3~4
+- analytics 이벤트 최소 6개 연동
+- 크롤러 자동화(스케줄/로그/재시도)
+- 기본 성능/모바일 레이아웃 개선
+
+### Week 5~8 (v1 확장)
+- 랭킹/커뮤니티/댓글 고도화
+- 광고 슬롯 및 빈도 설계(Feature flag로 점진적 노출)
+- 간단 추천 룰 적용
+
 ## 4) UX/IA(페이지 구조)
 ### 필수 페이지
 - `/` 홈
@@ -91,6 +112,12 @@
 - 작품 상세에서 “같은 요일/장르/작가” 링크 필수
 - 요일/장르 리스트에서 작품 상세 링크 필수
 
+### SEO 체크리스트(개발 검수용)
+- SSR/ISR 응답에 핵심 텍스트 노출 여부 확인
+- canonical/OG/Twitter 카드 중복 및 누락 방지
+- 404/빈 데이터 페이지에서도 기본 메타 제공
+- pagination(있을 경우) rel=prev/next 적용 고려
+
 ## 6) 수익화 설계(초기부터 고려)
 ### 광고(웹)
 - 1차: AdSense
@@ -98,6 +125,11 @@
   - 리스트 중간(예: 6~8번째)
   - 작품 상세 하단(댓글 위/아래 중 1곳)
 - 광고가 붙기 전에도 슬롯 컴포넌트 구조만 설계해두기(Feature flag)
+
+### 광고 슬롯 설계 예시(Feature flag)
+- `AdSlot` 컴포넌트: 위치, 크기, 노출 조건을 props로 관리
+- 리스트형 페이지: 6~8번째 콘텐츠 사이에 1개 삽입
+- 상세 페이지: 댓글 위/아래 중 1개 고정 위치
 
 ### 제휴(확장)
 - 외부 플랫폼 이동 버튼에 UTM/제휴링크 적용 가능하게 설계(확장)
@@ -155,6 +187,11 @@ rankings/{source}/{date}/items/{rankId} (확장)
 - 실행 시 수집 개수/변경 개수/실패 URL 로그
 - 실패한 작품 재시도 큐(간단히 파일/컬렉션)
 
+### 기본 데이터 정합성 규칙
+- `workId`는 플랫폼별 고유 키를 사용(중복 방지)
+- 썸네일 없을 경우 `og:image` fallback
+- `updatedAt`는 수집 시점 기준으로 일괄 갱신
+
 ## 9) 프론트엔드 기술 스택(권장)
 - Next.js(App Router) + TypeScript
 - Firebase Web SDK
@@ -167,6 +204,11 @@ rankings/{source}/{date}/items/{rankId} (확장)
 - 이벤트 최소 6개
   - `view_home`, `view_work`, `click_external`, `favorite_add`, `comment_add`, `search`
 - 추후 추천/광고 최적화를 위해 필수
+
+### 이벤트 파라미터 예시
+- `view_work`: workId, platform, genres, dayOfWeek
+- `click_external`: workId, platform, outboundUrl
+- `favorite_add`: workId, platform
 
 ## 11) 완료 기준(검수 체크리스트)
 ### 기능
@@ -185,3 +227,8 @@ rankings/{source}/{date}/items/{rankId} (확장)
 - 모바일 우선 레이아웃
 - 기본 성능(이미지 최적화, 무한 로딩 방지)
 - 운영 문구(TODO/임시) 노출 금지
+
+## 12) 추가 결정 필요 항목(미정/확인)
+- 작품 고유 ID 전략(플랫폼별 slug vs 내부 UUID)
+- 썸네일 캐시 정책(외부 핫링크 vs Storage 저장)
+- 광고 네트워크 적용 시점(AdSense 승인 일정)
